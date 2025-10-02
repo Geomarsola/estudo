@@ -1,8 +1,8 @@
 <?php
 
 use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\AuthController;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Auth;
 
 /*
 |--------------------------------------------------------------------------
@@ -16,37 +16,51 @@ Route::get('/', function () {
 });
 
 // ----------------------
-// LOGIN / LOGOUT
+// LOGIN / LOGOUT (Breeze / Laravel padrão)
 // ----------------------
+Route::get('/login', [App\Http\Controllers\Auth\AuthenticatedSessionController::class, 'create'])
+    ->name('login');
 
-// Formulário de login
-Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
+Route::post('/login', [App\Http\Controllers\Auth\AuthenticatedSessionController::class, 'store']);
 
-// Processar login
-Route::post('/login', [AuthController::class, 'login'])->name('login.process');
-
-// Logout
-Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+Route::post('/logout', [App\Http\Controllers\Auth\AuthenticatedSessionController::class, 'destroy'])
+    ->name('logout');
 
 // ----------------------
-// ROTAS PROTEGIDAS (usuário logado)
+// DASHBOARD genérico para redirecionamento
+// ----------------------
+Route::get('/dashboard', function () {
+    $user = auth()->user();
+    if ($user->role === 'admin') {
+        return redirect()->route('admin.dashboard');
+    } elseif ($user->role === 'frentista') {
+        return redirect()->route('frentista.dashboard');
+    }
+    abort(403);
+})->middleware('auth')->name('dashboard');
+
+// ----------------------
+// ROTAS PROTEGIDAS (USUÁRIO LOGADO)
+// ----------------------
+Route::middleware(['auth', 'admin'])->group(function () {
+    Route::get('/admin', function () {
+        return "Painel Admin"; // futuramente: view('admin.dashboard')
+    })->name('admin.dashboard');
+});
+
+Route::middleware(['auth', 'frentista'])->group(function () {
+    Route::get('/frentista', function () {
+        return "Painel Frentista"; // futuramente: view('frentista.dashboard')
+    })->name('frentista.dashboard');
+});
+
+// ----------------------
+// PROFILE (Laravel padrão)
 // ----------------------
 Route::middleware('auth')->group(function () {
-
-    // PROFILE (mantido do Laravel)
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-
-    // PAINEL ADMIN (para usuários com role = admin)
-    Route::get('/admin', function () {
-        return "Painel Admin"; // futuramente trocar para view('admin.dashboard')
-    })->name('admin.dashboard');
-
-    // PAINEL FRENTISTA (para usuários com role = frentista)
-    Route::get('/frentista', function () {
-        return "Painel Frentista"; // futuramente trocar para view('frentista.dashboard')
-    })->name('frentista.dashboard');
 });
 
 // Mantém rotas padrão de auth do Laravel

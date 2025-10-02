@@ -10,10 +10,10 @@ return new class extends Migration
     {
         Schema::create('sales', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained()->onDelete('cascade'); // frentista
-            $table->decimal('total', 10, 2)->default(0);
-            $table->timestamp('sold_at')->nullable();
-            $table->string('invoice_path')->nullable(); // foto nota fiscal
+            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
+            $table->decimal('total', 10, 2);
+            $table->timestamp('sold_at')->useCurrent();
+            $table->string('invoice_path')->nullable();
             $table->timestamps();
         });
     }

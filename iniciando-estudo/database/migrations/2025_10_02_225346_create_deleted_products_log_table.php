@@ -10,13 +10,11 @@ return new class extends Migration
     {
         Schema::create('deleted_products_log', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('product_id')->nullable();
-            $table->string('product_name')->nullable();
-            $table->integer('previous_stock')->nullable();
-            $table->decimal('previous_price', 10, 2)->nullable();
-            $table->unsignedBigInteger('deleted_by'); // admin id
+            $table->foreignId('product_id')->nullable()->constrained('products')->nullOnDelete();
+            $table->string('name');
+            $table->decimal('price', 10, 2);
+            $table->integer('stock');
             $table->timestamp('deleted_at')->useCurrent();
-            $table->timestamps();
         });
     }
 
