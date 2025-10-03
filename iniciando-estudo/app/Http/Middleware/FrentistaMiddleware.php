@@ -4,14 +4,16 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
-class FrentistaMiddleware
+class AdminMiddleware
 {
     public function handle(Request $request, Closure $next)
     {
-        if (auth()->check() && auth()->user()->role === 'frentista') {
+        if (Auth::check() && Auth::user()->role === 'admin') {
             return $next($request);
         }
-        abort(403, 'Acesso negado. Apenas frentista.');
+
+        return redirect('/login')->with('error', 'Acesso negado. Apenas admins.');
     }
 }

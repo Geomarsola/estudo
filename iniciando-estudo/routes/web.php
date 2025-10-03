@@ -2,13 +2,7 @@
 
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\Auth;
-
-/*
-|--------------------------------------------------------------------------
-| Web Routes
-|--------------------------------------------------------------------------
-*/
+use App\Http\Controllers\Admin\ProductController;
 
 // Página inicial redireciona para login
 Route::get('/', function () {
@@ -16,13 +10,12 @@ Route::get('/', function () {
 });
 
 // ----------------------
-// LOGIN / LOGOUT (Breeze / Laravel padrão)
+// LOGIN / LOGOUT (Laravel padrão / Breeze)
 // ----------------------
 Route::get('/login', [App\Http\Controllers\Auth\AuthenticatedSessionController::class, 'create'])
     ->name('login');
 
 Route::post('/login', [App\Http\Controllers\Auth\AuthenticatedSessionController::class, 'store']);
-
 Route::post('/logout', [App\Http\Controllers\Auth\AuthenticatedSessionController::class, 'destroy'])
     ->name('logout');
 
@@ -40,17 +33,23 @@ Route::get('/dashboard', function () {
 })->middleware('auth')->name('dashboard');
 
 // ----------------------
-// ROTAS PROTEGIDAS (USUÁRIO LOGADO)
+// ROTAS ADMIN (Protegidas)
 // ----------------------
-Route::middleware(['auth', 'admin'])->group(function () {
-    Route::get('/admin', function () {
-        return "Painel Admin"; // futuramente: view('admin.dashboard')
-    })->name('admin.dashboard');
+Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
+    Route::get('/', function () {
+        return "Painel Admin"; // futuramente view('admin.dashboard')
+    })->name('dashboard');
+
+    // CRUD de produtos
+    Route::resource('products', ProductController::class);
 });
 
+// ----------------------
+// ROTAS FRENTISTA
+// ----------------------
 Route::middleware(['auth', 'frentista'])->group(function () {
     Route::get('/frentista', function () {
-        return "Painel Frentista"; // futuramente: view('frentista.dashboard')
+        return "Painel Frentista"; // futuramente view('frentista.dashboard')
     })->name('frentista.dashboard');
 });
 
